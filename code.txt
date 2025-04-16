@@ -1,0 +1,87 @@
+// Motor control pins
+#define LEFT_MOTOR_FORWARD 7
+#define LEFT_MOTOR_BACKWARD 8
+#define RIGHT_MOTOR_FORWARD 9
+#define RIGHT_MOTOR_BACKWARD 10
+#define LEFT_MOTOR_SPEED 5
+#define RIGHT_MOTOR_SPEED 6
+
+// Headlight pin
+#define HEADLIGHT 1
+
+char command;
+int speedLevel = 250;
+
+void setup() {
+  pinMode(LEFT_MOTOR_FORWARD, OUTPUT);
+  pinMode(LEFT_MOTOR_BACKWARD, OUTPUT);
+  pinMode(LEFT_MOTOR_SPEED, OUTPUT);
+  pinMode(RIGHT_MOTOR_FORWARD, OUTPUT);
+  pinMode(RIGHT_MOTOR_BACKWARD, OUTPUT);
+  pinMode(RIGHT_MOTOR_SPEED, OUTPUT);
+  pinMode(HEADLIGHT, OUTPUT);
+
+  Serial.begin(9600);
+}
+
+void loop() {
+  if (Serial.available() > 0) {
+    command = Serial.read();
+    Serial.println(command);
+
+    // Movement Commands
+    if (command == 'F') motor(speedLevel, speedLevel);            // Forward
+    else if (command == 'L') motor(-speedLevel, speedLevel);      // Left
+    else if (command == 'R') motor(speedLevel, -speedLevel);      // Right
+    else if (command == 'G') motor(0, speedLevel);                // Left forward
+    else if (command == 'I') motor(speedLevel, 0);                // Right forward
+    else if (command == 'H') motor(0, -speedLevel);               // Left backward
+    else if (command == 'J') motor(-speedLevel, 0);               // Right backward
+    else if (command == 'B') motor(-speedLevel, -speedLevel);     // Backward
+    else if (command == 'S') motor(0, 0);                          // Stop
+
+    // Headlight Controls
+    else if (command == 'U') digitalWrite(HEADLIGHT, HIGH);       // Light ON
+    else if (command == 'u') digitalWrite(HEADLIGHT, LOW);        // Light OFF
+
+    // Speed Levels (0 - 9, q = max)
+    else if (command == '0') speedLevel = 0;
+    else if (command == '1') speedLevel = 25;
+    else if (command == '2') speedLevel = 50;
+    else if (command == '3') speedLevel = 75;
+    else if (command == '4') speedLevel = 100;
+    else if (command == '5') speedLevel = 125;
+    else if (command == '6') speedLevel = 150;
+    else if (command == '7') speedLevel = 175;
+    else if (command == '8') speedLevel = 200;
+    else if (command == '9') speedLevel = 225;
+    else if (command == 'q') speedLevel = 250;
+  }
+}
+
+// Motor control function
+void motor(int leftSpeed, int rightSpeed) {
+  // Left Motor Direction
+  if (leftSpeed >= 0) {
+    digitalWrite(LEFT_MOTOR_FORWARD, HIGH);
+    digitalWrite(LEFT_MOTOR_BACKWARD, LOW);
+  } else {
+    leftSpeed = -leftSpeed;
+    digitalWrite(LEFT_MOTOR_FORWARD, LOW);
+    digitalWrite(LEFT_MOTOR_BACKWARD, HIGH);
+  }
+
+  // Right Motor Direction
+  if (rightSpeed >= 0) {
+    digitalWrite(RIGHT_MOTOR_FORWARD, HIGH);
+    digitalWrite(RIGHT_MOTOR_BACKWARD, LOW);
+  } else {
+    rightSpeed = -rightSpeed;
+    digitalWrite(RIGHT_MOTOR_FORWARD, LOW);
+    digitalWrite(RIGHT_MOTOR_BACKWARD, HIGH);
+  }
+
+  // Speed Control
+  analogWrite(LEFT_MOTOR_SPEED, leftSpeed);
+  analogWrite(RIGHT_MOTOR_SPEED, rightSpeed);
+}
